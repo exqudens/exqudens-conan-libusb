@@ -632,7 +632,7 @@ add_custom_target("conan-export"
             ${CONAN_OPTIONS}
             "${PROJECT_SOURCE_DIR}/conanfile.py"
             #"gitlab-group+gitlab-sub-group+${PROJECT_NAME}/stable"
-    DEPENDS "${CMAKE_INSTALL_PREFIX}/cmake/${PROJECT_NAME}-config.cmake"
+    DEPENDS "cmake-install"
     WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
     USES_TERMINAL
     VERBATIM
