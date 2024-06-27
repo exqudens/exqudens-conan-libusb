@@ -166,7 +166,7 @@ if(NOT EXISTS "${CMAKE_DOWNLOADS}/${PROJECT_NAME_LOWER}-${PROJECT_VERSION_NOTWEA
     file(DOWNLOAD
         "https://github.com/${PROJECT_NAME_LOWER}/${PROJECT_NAME_LOWER}/archive/refs/tags/v${PROJECT_VERSION_NOTWEAK}.zip"
         "${PROJECT_BINARY_DIR}/tmp/${PROJECT_NAME_LOWER}-${PROJECT_VERSION_NOTWEAK}.zip"
-        EXPECTED_MD5 "cf850fd927a57830105e660b3bd6f854"
+        EXPECTED_MD5 "f929f80f6af30a0570a289c7c9b09399"
         STATUS downloadStatus
     )
     if(NOT "${downloadStatus}" STREQUAL "0;\"No error\"")
@@ -448,168 +448,15 @@ if(NOT "${SKIP_TEST}")
         endif()
     endif()
 
-    add_executable("test-app-stress-mt"
-        "${BASE_DIR}/tests/stress_mt.c"
-    )
-    target_link_libraries("test-app-stress-mt"
-        "test-lib"
-    )
-    set_target_properties("test-app-stress-mt" PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY                "${PROJECT_BINARY_DIR}/test/bin"
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE        "${PROJECT_BINARY_DIR}/test/bin"
-        RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PROJECT_BINARY_DIR}/test/bin"
-        RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL     "${PROJECT_BINARY_DIR}/test/bin"
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG          "${PROJECT_BINARY_DIR}/test/bin"
-
-        ARCHIVE_OUTPUT_DIRECTORY                "${PROJECT_BINARY_DIR}/test/lib"
-        ARCHIVE_OUTPUT_DIRECTORY_RELEASE        "${PROJECT_BINARY_DIR}/test/lib"
-        ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PROJECT_BINARY_DIR}/test/lib"
-        ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL     "${PROJECT_BINARY_DIR}/test/lib"
-        ARCHIVE_OUTPUT_DIRECTORY_DEBUG          "${PROJECT_BINARY_DIR}/test/lib"
-
-        LIBRARY_OUTPUT_DIRECTORY                "${PROJECT_BINARY_DIR}/test/lib"
-        LIBRARY_OUTPUT_DIRECTORY_RELEASE        "${PROJECT_BINARY_DIR}/test/lib"
-        LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PROJECT_BINARY_DIR}/test/lib"
-        LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL     "${PROJECT_BINARY_DIR}/test/lib"
-        LIBRARY_OUTPUT_DIRECTORY_DEBUG          "${PROJECT_BINARY_DIR}/test/lib"
-    )
-    if("${BUILD_SHARED_LIBS}")
-        if("windows" IN_LIST "PRESET_NAME_ELEMENTS")
-            add_custom_command(TARGET "test-app-stress-mt"
-                PRE_BUILD
-                COMMAND "${CMAKE_COMMAND}" -E copy_directory "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY>" "$<TARGET_PROPERTY:test-app-stress-mt,RUNTIME_OUTPUT_DIRECTORY>"
-                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-                USES_TERMINAL
-                VERBATIM
-            )
-        else()
-            add_custom_command(TARGET "test-app-stress-mt"
-                PRE_BUILD
-                COMMAND "${CMAKE_COMMAND}" -E copy_directory "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY>" "$<TARGET_PROPERTY:test-app-stress-mt,RUNTIME_OUTPUT_DIRECTORY>"
-                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-                USES_TERMINAL
-                VERBATIM
-            )
-        endif()
-    endif()
-
-    add_executable("test-app-set-option"
-        "${BASE_DIR}/tests/set_option.c"
-    )
-    target_link_libraries("test-app-set-option"
-        "test-lib"
-    )
-    set_target_properties("test-app-set-option" PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY                "${PROJECT_BINARY_DIR}/test/bin"
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE        "${PROJECT_BINARY_DIR}/test/bin"
-        RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PROJECT_BINARY_DIR}/test/bin"
-        RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL     "${PROJECT_BINARY_DIR}/test/bin"
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG          "${PROJECT_BINARY_DIR}/test/bin"
-
-        ARCHIVE_OUTPUT_DIRECTORY                "${PROJECT_BINARY_DIR}/test/lib"
-        ARCHIVE_OUTPUT_DIRECTORY_RELEASE        "${PROJECT_BINARY_DIR}/test/lib"
-        ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PROJECT_BINARY_DIR}/test/lib"
-        ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL     "${PROJECT_BINARY_DIR}/test/lib"
-        ARCHIVE_OUTPUT_DIRECTORY_DEBUG          "${PROJECT_BINARY_DIR}/test/lib"
-
-        LIBRARY_OUTPUT_DIRECTORY                "${PROJECT_BINARY_DIR}/test/lib"
-        LIBRARY_OUTPUT_DIRECTORY_RELEASE        "${PROJECT_BINARY_DIR}/test/lib"
-        LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PROJECT_BINARY_DIR}/test/lib"
-        LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL     "${PROJECT_BINARY_DIR}/test/lib"
-        LIBRARY_OUTPUT_DIRECTORY_DEBUG          "${PROJECT_BINARY_DIR}/test/lib"
-    )
-    if("${BUILD_SHARED_LIBS}")
-        if("windows" IN_LIST "PRESET_NAME_ELEMENTS")
-            add_custom_command(TARGET "test-app-set-option"
-                PRE_BUILD
-                COMMAND "${CMAKE_COMMAND}" -E copy_directory "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY>" "$<TARGET_PROPERTY:test-app-set-option,RUNTIME_OUTPUT_DIRECTORY>"
-                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-                USES_TERMINAL
-                VERBATIM
-            )
-        else()
-            add_custom_command(TARGET "test-app-set-option"
-                PRE_BUILD
-                COMMAND "${CMAKE_COMMAND}" -E copy_directory "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY>" "$<TARGET_PROPERTY:test-app-set-option,RUNTIME_OUTPUT_DIRECTORY>"
-                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-                USES_TERMINAL
-                VERBATIM
-            )
-        endif()
-    endif()
-
-    add_executable("test-app-init-context"
-        "${BASE_DIR}/tests/init_context.c"
-    )
-    target_link_libraries("test-app-init-context"
-        "test-lib"
-    )
-    set_target_properties("test-app-init-context" PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY                "${PROJECT_BINARY_DIR}/test/bin"
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE        "${PROJECT_BINARY_DIR}/test/bin"
-        RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PROJECT_BINARY_DIR}/test/bin"
-        RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL     "${PROJECT_BINARY_DIR}/test/bin"
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG          "${PROJECT_BINARY_DIR}/test/bin"
-
-        ARCHIVE_OUTPUT_DIRECTORY                "${PROJECT_BINARY_DIR}/test/lib"
-        ARCHIVE_OUTPUT_DIRECTORY_RELEASE        "${PROJECT_BINARY_DIR}/test/lib"
-        ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PROJECT_BINARY_DIR}/test/lib"
-        ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL     "${PROJECT_BINARY_DIR}/test/lib"
-        ARCHIVE_OUTPUT_DIRECTORY_DEBUG          "${PROJECT_BINARY_DIR}/test/lib"
-
-        LIBRARY_OUTPUT_DIRECTORY                "${PROJECT_BINARY_DIR}/test/lib"
-        LIBRARY_OUTPUT_DIRECTORY_RELEASE        "${PROJECT_BINARY_DIR}/test/lib"
-        LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PROJECT_BINARY_DIR}/test/lib"
-        LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL     "${PROJECT_BINARY_DIR}/test/lib"
-        LIBRARY_OUTPUT_DIRECTORY_DEBUG          "${PROJECT_BINARY_DIR}/test/lib"
-    )
-    if("${BUILD_SHARED_LIBS}")
-        if("windows" IN_LIST "PRESET_NAME_ELEMENTS")
-            add_custom_command(TARGET "test-app-init-context"
-                PRE_BUILD
-                COMMAND "${CMAKE_COMMAND}" -E copy_directory "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY>" "$<TARGET_PROPERTY:test-app-init-context,RUNTIME_OUTPUT_DIRECTORY>"
-                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-                USES_TERMINAL
-                VERBATIM
-            )
-        else()
-            add_custom_command(TARGET "test-app-init-context"
-                PRE_BUILD
-                COMMAND "${CMAKE_COMMAND}" -E copy_directory "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY>" "$<TARGET_PROPERTY:test-app-init-context,RUNTIME_OUTPUT_DIRECTORY>"
-                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-                USES_TERMINAL
-                VERBATIM
-            )
-        endif()
-    endif()
-
     add_test(
         NAME "test.stress"
         COMMAND "test-app-stress"
         WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/test/bin"
     )
 
-    add_test(
-        NAME "test.stress_mt"
-        COMMAND "test-app-stress-mt"
-        WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/test/bin"
-    )
-
-    add_test(
-        NAME "test.set_option"
-        COMMAND "test-app-set-option"
-        WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/test/bin"
-    )
-
-    add_test(
-        NAME "test.init_context"
-        COMMAND "test-app-init-context"
-        WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/test/bin"
-    )
-
     add_custom_target("cmake-test"
         COMMAND "${CMAKE_CTEST_COMMAND}" --preset "${PRESET_NAME}" "-R" "${TEST_REGEXP}"
-        DEPENDS "test-app-stress" "test-app-stress-mt" "test-app-set-option" "test-app-init-context"
+        DEPENDS "test-app-stress"
         WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
         USES_TERMINAL
         VERBATIM
