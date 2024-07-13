@@ -490,3 +490,10 @@ message(STATUS "all-targets:")
 foreach(t IN LISTS ALL_TARGETS)
     message(STATUS "${t}")
 endforeach()
+
+set("${PROJECT_NAME}_ADDITIONAL_CLEAN_FILES"
+    "${CMAKE_INSTALL_PREFIX}"
+)
+set_directory_properties(PROPERTIES
+    ADDITIONAL_CLEAN_FILES "${${PROJECT_NAME}_ADDITIONAL_CLEAN_FILES}"
+)
