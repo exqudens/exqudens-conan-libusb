@@ -1,4 +1,47 @@
-cmake_minimum_required(VERSION 3.25 FATAL_ERROR)
+cmake_minimum_required(VERSION "3.25" FATAL_ERROR)
+
+set(CMAKE_UTIL_FILE "" CACHE STRING "...")
+set(USE_CONAN "1" CACHE BOOL "...")
+
+message(STATUS "USE_CONAN: '${USE_CONAN}'")
+
+if("${USE_CONAN}")
+    if("windows" IN_LIST "PRESET_NAME_ELEMENTS")
+        find_program(CONAN_COMMAND NAMES "conan.exe" PATHS ENV CONAN_PATH ENV PATH REQUIRED NO_CACHE NO_DEFAULT_PATH)
+    else()
+        find_program(CONAN_COMMAND NAMES "conan" PATHS ENV CONAN_PATH ENV PATH REQUIRED NO_CACHE NO_DEFAULT_PATH)
+    endif()
+endif()
+
+if("${CMAKE_UTIL_FILE}" STREQUAL "")
+    if("$ENV{CMAKE_UTIL_FILE}" STREQUAL "")
+        if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/build/dependencies/direct_deploy/exqudens-cmake/cmake/util.cmake")
+            if("${USE_CONAN}")
+                #[[execute_process(
+                    COMMAND "${CONAN_COMMAND}" "user" "$ENV{CONAN_LOGIN_USERNAME}" "-r" "artifactory" "-p"
+                    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+                    ENCODING "UTF-8"
+                    COMMAND_ERROR_IS_FATAL "ANY"
+                )]]
+                execute_process(
+                    COMMAND "${CONAN_COMMAND}" "install" "--tool-requires=exqudens-cmake/2.0.1" "--deployer" "direct_deploy" "--deployer-folder" "${CMAKE_SOURCE_DIR}/build/dependencies"
+                    COMMAND_ECHO "STDERR"
+                    ENCODING "UTF-8"
+                    COMMAND_ERROR_IS_FATAL "ANY"
+                )
+                set(CMAKE_UTIL_FILE "${CMAKE_CURRENT_SOURCE_DIR}/build/dependencies/direct_deploy/exqudens-cmake/cmake/util.cmake" CACHE STRING "..." FORCE)
+            else()
+                message(FATAL_ERROR "Unable to resolve CMAKE_UTIL_FILE: '${CMAKE_UTIL_FILE}'")
+            endif()
+        else()
+            set(CMAKE_UTIL_FILE "${CMAKE_CURRENT_SOURCE_DIR}/build/dependencies/direct_deploy/exqudens-cmake/cmake/util.cmake" CACHE STRING "..." FORCE)
+        endif()
+    else()
+        set(CMAKE_UTIL_FILE "$ENV{CMAKE_UTIL_FILE}" CACHE STRING "..." FORCE)
+    endif()
+endif()
+
+include("${CMAKE_UTIL_FILE}")
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/cmake-install" CACHE PATH "..." FORCE)
 set(CMAKE_VERBOSE_MAKEFILE "TRUE" CACHE BOOL "..." FORCE)
@@ -7,28 +50,9 @@ set(SKIP_TEST "FALSE" CACHE BOOL "" FORCE)
 set(TEST_GROUP "all" CACHE STRING "...")
 set(TEST_CASE "all" CACHE STRING "...")
 
-block()
-    set(fileName "util.cmake")
-    if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/../common/${fileName}")
-        file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/tmp/${fileName}")
-        file(DOWNLOAD
-            "https://raw.githubusercontent.com/exqudens/exqudens-cmake/1.0.1/src/main/cmake/${fileName}"
-            "${CMAKE_CURRENT_BINARY_DIR}/tmp/${fileName}"
-            EXPECTED_MD5 "d7dd546adf3830d9eb6cca7b0dda7d4e"
-            STATUS downloadStatus
-        )
-        if(NOT "${downloadStatus}" STREQUAL "0;\"No error\"")
-            message(FATAL_ERROR "downloadStatus: '${downloadStatus}'")
-        endif()
-        file(COPY "${CMAKE_CURRENT_BINARY_DIR}/tmp/${fileName}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/../common")
-    endif()
-endblock()
-
-include("${CMAKE_CURRENT_BINARY_DIR}/../common/util.cmake")
-
 string(REPLACE "." ";" PRESET_NAME_ELEMENTS "${PRESET_NAME}")
 if("msvc-16-x64-x64" IN_LIST "PRESET_NAME_ELEMENTS")
-    if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/../common/msvc-16-x64-x64-toolchain.cmake")
+    if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/build/msvc-16-x64-x64-toolchain.cmake")
         set_msvc_toolchain(TOOLCHAIN_CONTENT
             PROCESSOR "x86_64"
             OS "${CMAKE_HOST_SYSTEM_NAME}"
@@ -36,19 +60,19 @@ if("msvc-16-x64-x64" IN_LIST "PRESET_NAME_ELEMENTS")
             HOST "x64"
             TARGET "x64"
             SET_CMAKE_SYSTEM_NAME "FALSE"
-            OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/../common/msvc-16-x64-x64-toolchain.cmake"
+            OUTPUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/build/msvc-16-x64-x64-toolchain.cmake"
         )
     endif()
     find_program(CONAN_COMMAND NAMES "conan.exe" PATHS ENV CONAN_PATH ENV PATH REQUIRED NO_CACHE NO_DEFAULT_PATH)
 elseif("gcc" IN_LIST PRESET_NAME_ELEMENTS)
-    if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/../common/gcc-toolchain.cmake")
+    if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/build/gcc-toolchain.cmake")
         find_file(compilerFile NAMES "gcc" PATHS ENV GCC_PATH ENV PATH REQUIRED NO_CACHE NO_DEFAULT_PATH)
         set_gnu_toolchain(TOOLCHAIN_CONTENT
             PROCESSOR "x86_64"
             OS "${CMAKE_HOST_SYSTEM_NAME}"
             PATH "${compilerFile}"
             SET_CMAKE_SYSTEM_NAME "FALSE"
-            OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/../common/gcc-toolchain.cmake"
+            OUTPUT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/build/gcc-toolchain.cmake"
         )
     endif()
     find_program(CONAN_COMMAND NAMES "conan" PATHS ENV CONAN_PATH ENV PATH REQUIRED NO_CACHE NO_DEFAULT_PATH)
@@ -116,26 +140,33 @@ if(MSVC)
 endif()
 string(JOIN " " CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 
-set_conan_architecture(CONAN_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
-set_conan_compiler(CONAN_COMPILER "${CMAKE_CXX_COMPILER_ID}")
-set_conan_compiler_version(CONAN_COMPILER_VERSION "${CMAKE_CXX_COMPILER_ID}" "${CMAKE_CXX_COMPILER_VERSION}" MAX_ELEMENTS "1")
-set_conan_compiler_runtime(CONAN_COMPILER_RUNTIME "${CMAKE_MSVC_RUNTIME_LIBRARY}")
+if("${USE_CONAN}")
+    set_conan_architecture(CONAN_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
+    set_conan_compiler(CONAN_COMPILER "${CMAKE_CXX_COMPILER_ID}")
+    set_conan_compiler_version(CONAN_COMPILER_VERSION "${CMAKE_CXX_COMPILER_ID}" "${CMAKE_CXX_COMPILER_VERSION}" MAX_ELEMENTS "1")
+    set_conan_compiler_runtime(CONAN_COMPILER_RUNTIME "${CMAKE_MSVC_RUNTIME_LIBRARY}")
+    set_conan_compiler_runtime_type(CONAN_COMPILER_RUNTIME_TYPE "${CMAKE_MSVC_RUNTIME_LIBRARY}")
 
-set_python_boolean(CONAN_INTERFACE_ONLY "${INTERFACE_ONLY}")
-set_python_boolean(CONAN_BUILD_SHARED_LIBS "${BUILD_SHARED_LIBS}")
+    set_python_boolean(CONAN_INTERFACE_ONLY "${INTERFACE_ONLY}")
+    set_python_boolean(CONAN_BUILD_SHARED_LIBS "${BUILD_SHARED_LIBS}")
 
-set_conan_settings(CONAN_SETTINGS
-    "arch=${CONAN_ARCH}"
-    "os=${CMAKE_SYSTEM_NAME}"
-    "compiler=${CONAN_COMPILER}"
-    "compiler.version=${CONAN_COMPILER_VERSION}"
-    "compiler.runtime=${CONAN_COMPILER_RUNTIME}"
-    "compiler.libcxx=${CONAN_COMPILER_LIBCXX}"
-    "build_type=${CMAKE_BUILD_TYPE}"
-)
-set_conan_options(CONAN_OPTIONS
-    "shared=${CONAN_BUILD_SHARED_LIBS}"
-)
+    set_conan_settings(CONAN_SETTINGS
+        "arch=${CONAN_ARCH}"
+        "os=${CMAKE_SYSTEM_NAME}"
+        "compiler=${CONAN_COMPILER}"
+        "compiler.version=${CONAN_COMPILER_VERSION}"
+        "compiler.cstd=${CMAKE_C_STANDARD}"
+        "compiler.cppstd=${CMAKE_CXX_STANDARD}"
+        "compiler.runtime=${CONAN_COMPILER_RUNTIME}"
+        "compiler.runtime_type=${CONAN_COMPILER_RUNTIME_TYPE}"
+        "compiler.libcxx=${CONAN_COMPILER_LIBCXX}"
+        "build_type=${CMAKE_BUILD_TYPE}"
+    )
+    set_conan_options(CONAN_OPTIONS
+        "&:shared=${CONAN_BUILD_SHARED_LIBS}"
+        "*:shared=${CONAN_BUILD_SHARED_LIBS}"
+    )
+endif()
 
 cmake_path(CONVERT "$ENV{CMAKE_USER_HOME}" TO_CMAKE_PATH_LIST CMAKE_USER_HOME NORMALIZE)
 if("" STREQUAL "${CMAKE_USER_HOME}")
@@ -223,7 +254,7 @@ set(OS_LINUX_SRC
     "${BASE_DIR}/${PROJECT_NAME}/os/linux_usbfs.c"
 )
 
-set(OS_EMSCRIPTEN_SRC 
+set(OS_EMSCRIPTEN_SRC
     "${BASE_DIR}/${PROJECT_NAME}/os/emscripten_webusb.cpp"
 )
 
@@ -471,19 +502,21 @@ add_custom_target("cmake-install" ALL
     VERBATIM
 )
 
-add_custom_target("conan-export"
-    COMMAND "${CONAN_COMMAND}" "export-pkg"
-            "--force"
-            "--package-folder" "${CMAKE_INSTALL_PREFIX}"
-            ${CONAN_SETTINGS}
-            ${CONAN_OPTIONS}
-            "${PROJECT_SOURCE_DIR}/conanfile.py"
-            #"gitlab-group+gitlab-sub-group+${PROJECT_NAME}/stable"
-    DEPENDS "cmake-install"
-    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-    USES_TERMINAL
-    VERBATIM
-)
+if("${USE_CONAN}")
+    add_custom_target("conan-export"
+        COMMAND "${CONAN_COMMAND}" "export-pkg"
+                "--output-folder" "${CMAKE_INSTALL_PREFIX}"
+                ${CONAN_SETTINGS}
+                ${CONAN_OPTIONS}
+                #"--user" "gitlab-group+gitlab-sub-group+${PROJECT_NAME}"
+                #"--channel" "stable"
+                "${PROJECT_SOURCE_DIR}/conanfile.py"
+        DEPENDS "cmake-install"
+        WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+        USES_TERMINAL
+        VERBATIM
+    )
+endif()
 
 set_target_names(ALL_TARGETS "${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "all-targets:")
