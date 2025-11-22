@@ -143,6 +143,7 @@ string(JOIN " " CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 
 if("${USE_CONAN}")
     set_conan_architecture(CONAN_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
+    set_conan_os(CONAN_OS "${CMAKE_SYSTEM_NAME}")
     set_conan_compiler(CONAN_COMPILER "${CMAKE_CXX_COMPILER_ID}")
     set_conan_compiler_version(CONAN_COMPILER_VERSION "${CMAKE_CXX_COMPILER_ID}" "${CMAKE_CXX_COMPILER_VERSION}" MAX_ELEMENTS "1")
     set_conan_compiler_runtime(CONAN_COMPILER_RUNTIME "${CMAKE_MSVC_RUNTIME_LIBRARY}")
@@ -153,7 +154,7 @@ if("${USE_CONAN}")
 
     set_conan_settings(CONAN_SETTINGS
         "arch=${CONAN_ARCH}"
-        "os=${CMAKE_SYSTEM_NAME}"
+        "os=${CONAN_OS}"
         "compiler=${CONAN_COMPILER}"
         "compiler.version=${CONAN_COMPILER_VERSION}"
         "compiler.cstd=${CMAKE_C_STANDARD}"
