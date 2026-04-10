@@ -3,12 +3,12 @@ from pathlib import Path
 required_conan_version = ">=2.0"
 
 from conan import ConanFile
-from conan.tools.files import copy, save, collect_libs
+from conan.tools.files import copy, collect_libs
 
 class ConanConfiguration(ConanFile):
     settings = "arch", "os", "compiler", "build_type"
-    options = {"interface": [True, False], "shared": [True, False]}
-    default_options = {"interface": False, "shared": True}
+    options = {"shared": [True, False], "interface": [True, False]}
+    default_options = {"shared": True, "interface": False}
 
     def set_name(self):
         try:
@@ -55,6 +55,3 @@ class ConanConfiguration(ConanFile):
         except Exception as e:
             self.output.error(e)
             raise e
-
-if __name__ == "__main__":
-    pass
