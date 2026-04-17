@@ -371,27 +371,6 @@ set(OS_WINDOWS_SRC
     "${BASE_DIR_REL}/libusb/os/windows_winusb.c"
 )
 
-if("windows" IN_LIST "PRESET_NAME_ELEMENTS")
-    set(SRC_FILES
-        "${BASE_DIR_REL}/msvc/config.h"
-        #"${BASE_DIR_REL}/msvc/getopt/getopt.h"
-        #"${BASE_DIR_REL}/msvc/getopt/getopt.c"
-        #"${BASE_DIR_REL}/msvc/getopt/getopt1.c"
-        ${WINDOWS_PLATFORM_SRC}
-        ${OS_WINDOWS_SRC}
-    )
-elseif("linux" IN_LIST "PRESET_NAME_ELEMENTS")
-    configure_file("${PROJECT_SOURCE_DIR}/config.h.in" "${PROJECT_SOURCE_DIR}/${BASE_DIR_REL}/gcc/config.h" @ONLY NEWLINE_STYLE UNIX)
-    set(SRC_FILES
-        "${BASE_DIR_REL}/gcc/config.h"
-        "${BASE_DIR_REL}/libusb/os/linux_netlink.c"
-        ${POSIX_PLATFORM_SRC}
-        ${OS_LINUX_SRC}
-    )
-else()
-    message(FATAL_ERROR "Unsupported PRESET_NAME: '${PRESET_NAME}'")
-endif()
-
 add_library("${PROJECT_NAME}"
     "${BASE_DIR_REL}/libusb/libusbi.h"
     "${BASE_DIR_REL}/libusb/version.h"
@@ -402,14 +381,37 @@ add_library("${PROJECT_NAME}"
     "${BASE_DIR_REL}/libusb/io.c"
     "${BASE_DIR_REL}/libusb/strerror.c"
     "${BASE_DIR_REL}/libusb/sync.c"
-    ${SRC_FILES}
 )
+if("windows" IN_LIST "PRESET_NAME_ELEMENTS")
+    target_sources("${PROJECT_NAME}" PRIVATE
+        "${BASE_DIR_REL}/msvc/config.h"
+        #"${BASE_DIR_REL}/msvc/getopt/getopt.h"
+        #"${BASE_DIR_REL}/msvc/getopt/getopt.c"
+        #"${BASE_DIR_REL}/msvc/getopt/getopt1.c"
+        ${WINDOWS_PLATFORM_SRC}
+        ${OS_WINDOWS_SRC}
+    )
+    target_include_directories("${PROJECT_NAME}" PUBLIC
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/${BASE_DIR_REL}/msvc>"
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/${BASE_DIR_REL}/msvc/getopt>"
+    )
+elseif("linux" IN_LIST "PRESET_NAME_ELEMENTS")
+    configure_file("${PROJECT_SOURCE_DIR}/config.h.in" "${PROJECT_SOURCE_DIR}/${BASE_DIR_REL}/gcc/config.h" @ONLY NEWLINE_STYLE UNIX)
+    target_sources("${PROJECT_NAME}" PRIVATE
+        "${BASE_DIR_REL}/gcc/config.h"
+        "${BASE_DIR_REL}/libusb/os/linux_netlink.c"
+        ${POSIX_PLATFORM_SRC}
+        ${OS_LINUX_SRC}
+    )
+    target_include_directories("${PROJECT_NAME}" PUBLIC
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/${BASE_DIR_REL}/gcc>"
+    )
+else()
+    message(FATAL_ERROR "Unsupported PRESET_NAME: '${PRESET_NAME}'")
+endif()
 target_include_directories("${PROJECT_NAME}" PUBLIC
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/${BASE_DIR_REL}/libusb>"
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/${BASE_DIR_REL}/libusb/os>"
-    "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/${BASE_DIR_REL}/msvc>"
-    "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/${BASE_DIR_REL}/msvc/getopt>"
-    "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/${BASE_DIR_REL}/gcc>"
     "$<INSTALL_INTERFACE:include>"
 )
 set_target_properties("${PROJECT_NAME}" PROPERTIES
