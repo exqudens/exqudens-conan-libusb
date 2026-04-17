@@ -85,13 +85,6 @@ project("${NAME}" VERSION "${VERSION}" LANGUAGES "NONE")
 
 message(STATUS "project: '${PROJECT_NAME}-${PROJECT_VERSION}'")
 
-string(TOLOWER "${PROJECT_NAME}" PROJECT_NAME_LOWER)
-string(TOUPPER "${PROJECT_NAME}" PROJECT_NAME_UPPER)
-set(PROJECT_VERSION_NOTWEAK "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
-
-message(STATUS "PROJECT_NAME_LOWER: '${PROJECT_NAME_LOWER}'")
-message(STATUS "PROJECT_VERSION_NOTWEAK: '${PROJECT_VERSION_NOTWEAK}'")
-
 enable_language("C")
 enable_language("CXX")
 include("GenerateExportHeader")
@@ -585,6 +578,7 @@ if(NOT "${SKIP_TEST}")
             add_custom_command(TARGET "test-app"
                 PRE_BUILD
                 COMMAND "${CMAKE_COMMAND}" "-E" "copy_directory" "${CONAN_INSTALL_PREFIX}/test/lib" "$<TARGET_PROPERTY:test-app,RUNTIME_OUTPUT_DIRECTORY>"
+                COMMAND "${CMAKE_COMMAND}" "-E" "copy_directory" "$<TARGET_PROPERTY:test-lib,LIBRARY_OUTPUT_DIRECTORY>" "$<TARGET_PROPERTY:test-app,RUNTIME_OUTPUT_DIRECTORY>"
                 #COMMAND "${CMAKE_COMMAND}" "-E" "copy_directory" "${CONAN_INSTALL_PREFIX}/lib" "$<TARGET_PROPERTY:test-app,RUNTIME_OUTPUT_DIRECTORY>"
                 COMMAND "${CMAKE_COMMAND}" "-E" "copy_directory" "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY>" "$<TARGET_PROPERTY:test-app,RUNTIME_OUTPUT_DIRECTORY>"
                 WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
@@ -618,6 +612,8 @@ if(NOT "${SKIP_TEST}")
     elseif("${TEST_METHOD}" STREQUAL "all")
         set(TEST_PATTERN "^${TEST_GROUP}\\..+$")
     endif()
+
+    message(STATUS "TEST_PATTERN: '${TEST_PATTERN}'")
 
     add_custom_command(
         OUTPUT "${PROJECT_BINARY_DIR}/junit.xml"
